@@ -125,3 +125,6 @@ Statuses follow `Applied → Reviewed → Interview → Offer/Rejected`. Admins 
 
 This project is provided for assignment purposes. Consult course documentation for questions or escalation paths.
 
+
+
+
