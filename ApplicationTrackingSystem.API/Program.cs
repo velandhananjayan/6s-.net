@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ApplicationTrackingSystem.API.Data;
-using ApplicationTrackingSystem.API.Models;
 using ApplicationTrackingSystem.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +29,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -53,18 +52,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure Database - PostgreSQL or SQL Server
-var useSqlServer = builder.Configuration.GetValue<bool>("Database:UseSqlServer", false);
-var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection") ??
-    Environment.GetEnvironmentVariable("DefaultConnection");
+// Get DB connection string from environment
+var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") 
+                       ?? throw new Exception("DefaultConnection environment variable is not set.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    if (useSqlServer)
-        options.UseSqlServer(connectionString);
-    else
-        options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure();
+    });
 });
 
 // Configure JWT Authentication
@@ -142,6 +139,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         dbContext.Database.Migrate();
+        Console.WriteLine("Database migrated successfully.");
     }
     catch (Exception ex)
     {
