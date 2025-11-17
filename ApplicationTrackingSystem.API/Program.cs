@@ -90,13 +90,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Register services
+// Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<IBotMimicService, BotMimicService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-
 builder.Services.AddHostedService<BotMimicBackgroundService>();
 
 // Configure CORS
@@ -110,12 +109,16 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Bind to Render's PORT
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
-// Swagger UI
+// Health check endpoint for Render
+app.MapGet("/health", () => Results.Ok("OK"));
+
+// Swagger only in Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -124,15 +127,16 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Application Tracking System API v1");
         c.RoutePrefix = string.Empty;
     });
+
+    app.UseHttpsRedirection(); // Only for Development
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Apply migrations safely
+// Apply migrations at startup
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
