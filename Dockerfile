@@ -1,22 +1,22 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY *.sln ./
-COPY */*.csproj ./
-
-RUN for d in $(ls -d */); do if [ -f "$d"*.csproj ]; then mkdir -p "$d"; fi; done
-
+# Copy everything
 COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o /app
+
+# Restore the main API project
+RUN dotnet restore "ApplicationTrackingSystem.API/ApplicationTrackingSystem.API.csproj"
+
+# Build and publish
+RUN dotnet publish "ApplicationTrackingSystem.API/ApplicationTrackingSystem.API.csproj" -c Release -o /app/publish
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
-COPY --from=build /app ./
+COPY --from=build /app/publish .
 
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 
 ENTRYPOINT ["dotnet", "ApplicationTrackingSystem.API.dll"]
