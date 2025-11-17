@@ -52,7 +52,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Get DB connection string from environment
+// Database configuration
 var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") 
                        ?? throw new Exception("DefaultConnection environment variable is not set.");
 
@@ -118,17 +118,18 @@ var app = builder.Build();
 // Health check endpoint for Render
 app.MapGet("/health", () => Results.Ok("OK"));
 
-// Swagger only in Development
+// Enable Swagger in all environments
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Application Tracking System API v1");
+    c.RoutePrefix = string.Empty; // Swagger UI at root
+});
+
+// Use HTTPS only in development
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Application Tracking System API v1");
-        c.RoutePrefix = string.Empty;
-    });
-
-    app.UseHttpsRedirection(); // Only for Development
+    app.UseHttpsRedirection();
 }
 
 app.UseCors("AllowAll");
