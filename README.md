@@ -29,7 +29,12 @@ ApplicationTrackingSystem.API/
 └── Program.cs
 ```
 
-## 3. Technology Stack
+## 3. Architecture Diagram
+
+<img width="749" height="819" alt="image" src="https://github.com/user-attachments/assets/4925f441-e0a1-402e-84e3-2e9c8bf55438" />
+
+
+## 4. Technology Stack
 
 | Area | Choice |
 | --- | --- |
@@ -39,7 +44,7 @@ ApplicationTrackingSystem.API/
 | Auth | JWT bearer tokens |
 | Documentation | Swagger UI |
 
-## 4. Setup
+## 5. Setup
 
 1. Install prerequisites: .NET 9 SDK, PostgreSQL 12+ (or SQL Server), preferred IDE.
 2. Clone repository:
@@ -56,7 +61,7 @@ ApplicationTrackingSystem.API/
    dotnet build
    ```
 
-## 5. Running Locally
+## 6. Running Locally
 
 ```bash
 cd ApplicationTrackingSystem.API
@@ -67,7 +72,7 @@ dotnet run
 - Base API path: `/api`
 - Open Swagger, click **Authorize**, and provide `Bearer <token>` from login.
 
-## 6. Seed Accounts
+## 7. Seed Accounts
 
 | Role | Username | Password |
 | --- | --- | --- |
@@ -75,7 +80,7 @@ dotnet run
 | Bot Mimic | botmimic | botmimic123 |
 | Admin | admin | admin123 |
 
-## 7. Key Endpoints
+## 8. Key Endpoints
 
 | Area | Endpoint |
 | --- | --- |
@@ -85,7 +90,7 @@ dotnet run
 | Admin tools | `POST /api/admin/job-roles`, `GET /api/admin/job-roles`, `GET /api/admin/applications`, `PUT /api/admin/applications/{id}/status` |
 | Dashboards | `GET /api/dashboard` |
 
-## 8. Typical Workflows
+## 9. Typical Workflows
 
 | Applicant | Bot Mimic | Admin |
 | --- | --- | --- |
@@ -93,26 +98,26 @@ dotnet run
 
 Statuses follow `Applied → Reviewed → Interview → Offer/Rejected`. Admins can override non-technical flows; Bot Mimic advances technical ones.
 
-## 9. Data Model
+## 10. Data Model
 
 - Users: identity, credentials, role, timestamps.
 - JobRoles: metadata, technical flag, author, activity state.
 - Applications: applicant link, role link, status, notes, timestamps.
 - ActivityLogs: action, status transition, comment, performing role/user, timestamp.
 
-## 10. Security Notes
+## 11. Security Notes
 
 - JWT tokens expire after 24 hours; include `Bearer` prefix.
 - Passwords stored via BCrypt.
 - Policy-based authorization ensures users are limited to their role scope.
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 - **Database**: confirm server is running, credentials are valid, and connection string matches.
 - **Authentication**: verify JWT key length (>=32 chars) and unexpired tokens.
 - **Swagger/UI**: run in Development mode and check ports 5000/5001 (or 5059) are free.
 
-## 12. Development Tips
+## 13. Development Tips
 
 - Default setup uses `EnsureCreated()`. For migrations:
   ```bash
@@ -121,9 +126,16 @@ Statuses follow `Applied → Reviewed → Interview → Offer/Rejected`. Admins 
   ```
 - To extend functionality: add models, services, and controllers, then register services in `Program.cs`.
 
-## 13. License & Support
+## 14. OUTPUT 
 
-This project is provided for assignment purposes. Consult course documentation for questions or escalation paths.
+<img width="1919" height="956" alt="image" src="https://github.com/user-attachments/assets/f13de12c-bef5-443a-bee0-588d021b2fd0" />
+
+<img width="1902" height="541" alt="image" src="https://github.com/user-attachments/assets/a4029739-dcfb-4a25-b70a-980e3be08b3e" />
+
+<img width="1900" height="961" alt="image" src="https://github.com/user-attachments/assets/ea9ac6f9-4273-451b-9958-c08bfa9002a5" />
+
+
+
 
 
 
