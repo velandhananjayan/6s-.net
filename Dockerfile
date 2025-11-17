@@ -14,9 +14,16 @@ RUN dotnet publish "ApplicationTrackingSystem.API/ApplicationTrackingSystem.API.
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
+
+# Copy published app from build stage
 COPY --from=build /app/publish .
 
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
+# Bind to the port provided by Render
+ENV PORT 8080
+ENV ASPNETCORE_URLS=http://0.0.0.0:$PORT
 
+# Expose the port for the container
+EXPOSE 8080
+
+# Run the app
 ENTRYPOINT ["dotnet", "ApplicationTrackingSystem.API.dll"]
