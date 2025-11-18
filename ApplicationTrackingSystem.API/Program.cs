@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -53,8 +54,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Database configuration
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") 
-                       ?? throw new Exception("DefaultConnection environment variable is not set.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("DefaultConnection")
+                       ?? throw new Exception("DefaultConnection is not set in appsettings.json or environment variables.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -109,9 +111,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Bind to Render's PORT
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+// Bind to PORT environment variable for deployment (Render, etc.)
+// In development, launchSettings.json will be used instead
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 var app = builder.Build();
 
@@ -143,12 +149,33 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        dbContext.Database.Migrate();
-        Console.WriteLine("Database migrated successfully.");
+        var pendingMigrations = dbContext.Database.GetPendingMigrations().ToList();
+        if (pendingMigrations.Any())
+        {
+            dbContext.Database.Migrate();
+            Console.WriteLine($"Database migrated successfully. Applied {pendingMigrations.Count} migration(s).");
+        }
+        else
+        {
+            Console.WriteLine("Database is up to date. No migrations needed.");
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"DB Migration Error: {ex.Message}");
+        // In development, try to ensure database exists if migrations fail
+        if (app.Environment.IsDevelopment())
+        {
+            try
+            {
+                dbContext.Database.EnsureCreated();
+                Console.WriteLine("Database ensured (using EnsureCreated).");
+            }
+            catch (Exception ensureEx)
+            {
+                Console.WriteLine($"Database EnsureCreated also failed: {ensureEx.Message}");
+            }
+        }
     }
 }
 
